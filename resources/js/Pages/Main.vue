@@ -97,8 +97,8 @@ function checkDeal(bundle) {
                                 d="M8 7V6a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1M3 18v-7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Zm8-3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
                         </svg>
 
-                        <span class="text-base font-normal leading-tight text-gray-500 dark:text-gray-400 ms-3">Доход за
-                            круг: {{ bundle.income_percent }}% </span>
+                        <span class="text-base leading-tight font-normal text-gray-500 dark:text-gray-400 ms-3">Доход за
+                            круг: {{ bundle.incoe_percent }}% </span>
                     </li>
                     <li class="flex">
                         <svg class="shrink-0 w-4 h-4 text-blue-700 dark:text-blue-500" aria-hidden="true"
