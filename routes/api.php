@@ -34,7 +34,7 @@ Route::prefix('user')->group(function () {
 });
 
 Route::get('/bundles', function () {
-    $bundles = Bundle::all();
+    $bundles = Bundle::where('status', true)->get();
     return response()->json($bundles);
 });
 

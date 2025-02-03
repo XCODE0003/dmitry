@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('min_deposit');
             $table->string('income_percent');
             $table->json('coins');
+         
             $table->timestamps();
         });
     }
