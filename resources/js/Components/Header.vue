@@ -15,7 +15,7 @@ onMounted(async () => {
 
 </script>
 <template>
-    <header class="py-5 w-full flex justify-center">
+    <header class="pb-5 w-full flex justify-center">
 
         <div class="flex flex-col gap-2">
             <div class="flex justify-end">
