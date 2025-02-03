@@ -8,7 +8,7 @@ export const useInvestModalStore = defineStore('investModal', () => {
         displayDirective: 'if',
         hideOverlay: false,
         overlayTransition: 'vfm-fade',
-        contentTransition: ' vfm-slide-down',
+        contentTransition: ' vfm-slide-up',
         clickToClose: true,
         escToClose: true,
         background: 'non-interactive',
