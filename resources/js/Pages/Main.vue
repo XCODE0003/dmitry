@@ -1,7 +1,7 @@
 <script setup>
 import MainLayout from '../Layouts/MainLayout.vue';
 import Header from '../Components/Header.vue';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, nextTick, watch, onUnmounted } from 'vue';
 import { Tooltip } from 'flowbite';
 import { useSystemStore } from '../Store/System/SystemStore';
 import { useInvestModalStore } from '../Store/Modal/InvestStore';
@@ -21,17 +21,60 @@ function pluralize(number, word) {
     }
 }
 
-onMounted(() => {
-    const tooltipElements = document.querySelectorAll('[data-tooltip-target]');
-    tooltipElements.forEach(tooltipEl => {
-        const targetEl = document.getElementById(tooltipEl.dataset.tooltipTarget);
-        new Tooltip(targetEl, tooltipEl);
-    });
-    systemStore.fetchBundles();
+onMounted(async () => {
+    // Дождемся следующего тика Vue для уверенности, что DOM обновлен
+    await nextTick();
+
+    // Функция инициализации тултипов
+    const initTooltips = () => {
+        const tooltipElements = document.querySelectorAll('[data-tooltip-target]');
+        tooltipElements.forEach(tooltipEl => {
+            const targetEl = document.getElementById(tooltipEl.dataset.tooltipTarget);
+            if (targetEl && !targetEl._tooltip) {  // Проверяем, не инициализирован ли уже тултип
+                try {
+                    targetEl._tooltip = new Tooltip(targetEl, tooltipEl, {
+                        // Добавьте нужные опции
+                        placement: 'top',
+                        trigger: 'hover'
+                    });
+                } catch (e) {
+                    console.error('Tooltip initialization error:', e);
+                }
+            }
+        });
+    };
+
+    initTooltips();
+
+    await systemStore.fetchBundles();
+    
+    await nextTick();
+    initTooltips();
 
     setInterval(() => {
         now.value = moment.utc();
     }, 1000);
+});
+
+watch(() => systemStore.bundles, async () => {
+    await nextTick();
+    initTooltips();
+}, { deep: true });
+
+watch(() => systemStore.activeTab, async () => {
+    await nextTick();
+    initTooltips();
+});
+
+onUnmounted(() => {
+    const tooltipElements = document.querySelectorAll('[data-tooltip-target]');
+    tooltipElements.forEach(tooltipEl => {
+        const targetEl = document.getElementById(tooltipEl.dataset.tooltipTarget);
+        if (targetEl && targetEl._tooltip) {
+            targetEl._tooltip.destroy();
+            delete targetEl._tooltip;
+        }
+    });
 });
 
 function timeLeft(deal) {
