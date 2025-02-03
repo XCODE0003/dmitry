@@ -98,7 +98,7 @@ function checkDeal(bundle) {
                         </svg>
 
                         <span class="text-base leading-tight font-normal text-gray-500 dark:text-gray-400 ms-3">Доход за
-                            круг: {{ bundle.incoe_percent }}% </span>
+                            круг: {{ bundle.income_percent }}% </span>
                     </li>
                     <li class="flex">
                         <svg class="shrink-0 w-4 h-4 text-blue-700 dark:text-blue-500" aria-hidden="true"
