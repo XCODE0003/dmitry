@@ -64,10 +64,10 @@ function checkDeal(bundle) {
                 </h5>
                 <div class="flex items-center gap-1 ">
                     <div v-for="(coin, index) in bundle.coins" :key="coin.id" class="flex items-center gap-1">
-                        <button :data-tooltip-target="'tooltip-' + coin.name" type="button">
+                        <button :data-tooltip-target="'tooltip-' + coin.name + '-' + bundle.id" type="button">
                             <img :src="'/storage/' + coin?.image" alt="coin" class="w-5 h-5 rounded-full">
                         </button>
-                        <div :id="'tooltip-' + coin.name" role="tooltip"
+                        <div :id="'tooltip-' + coin.name + '-' + bundle.id" role="tooltip"
                             class="absolute z-10 invisible inline-block px-3 py-2 text-xs font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
                             {{ coin.name }}
                             <div class="tooltip-arrow" data-popper-arrow></div>
@@ -134,8 +134,8 @@ function checkDeal(bundle) {
                 <h5 class="mb-4 text-xl font-medium text-gray-500 dark:text-gray-400">{{ deal.bundle.name }}
                 </h5>
                 <div class="flex items-center gap-1 ">
-                    <div v-for="(coin, index) in deal.bundle.coins" :key="coin.id" class="flex items-center gap-1">
-                        <button :data-tooltip-target="'tooltip-' + coin.name" type="button">
+                    <div v-for="(coin, index) in deal.bundle.coins" :key="coin.id + '-' + deal.bundle.id" class="flex items-center gap-1">
+                        <button :data-tooltip-target="'tooltip-' + coin.name + '-' + deal.bundle.id" type="button">
                             <img :src="'/storage/' + coin?.image" alt="coin" class="w-5 h-5 rounded-full">
                         </button>
                         <div :id="'tooltip-' + coin.name" role="tooltip"
