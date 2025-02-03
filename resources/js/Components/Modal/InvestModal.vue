@@ -7,8 +7,12 @@ const investModalStore = useInvestModalStore()
 const userStore = useUserStore()
 
 
-const amount = ref(null)
+const amount = ref('')
 
+const handleInput = (event) => {
+    const value = event.target.value.replace(/[^0-9]/g, '')
+    amount.value = value === '' ? '' : value
+}
 </script>
 <template>
     <VueFinalModal v-model="investModalStore.modalConfig.modelValue"
@@ -44,9 +48,17 @@ const amount = ref(null)
                         <div class="col-span-2">
                             <label 
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Сумма вклада</label>
-                            <input type="number" name="name" id="name" 
+                            <input 
+                                type="tel"
+                                name="name" 
+                                id="name"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                v-model="amount"
+                                @input="handleInput"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                placeholder="Введите сумму вклада" v-model="amount">
+                                placeholder="Введите сумму вклада"
+                            >
                         </div>
                       
                     </div>
