@@ -57,7 +57,7 @@ export const useUserStore = defineStore('user', {
             const response = await axios.post(`/api/user/invest`, { bundle_id: bundle.id, amount: amount, user_id: user.user.id });
             
             if(response.status === 200) {
-                toast("Вывод со связки прошел успешно", {
+                toast("Инвестиция прошла успешно", {
                     type: "success"
                 });
                 systemStore.fetchDeals();
