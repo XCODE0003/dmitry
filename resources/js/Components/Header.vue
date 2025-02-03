@@ -11,6 +11,10 @@ onMounted(async () => {
         await userStore.fetchUser(userId);
         await systemStore.fetchDeals();
     }
+    if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+    }
 });
 
 </script>
