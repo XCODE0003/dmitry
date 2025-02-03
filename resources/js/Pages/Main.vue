@@ -101,7 +101,7 @@ function checkDeal(bundle) {
     <MainLayout>
         <Header />
         <div v-if="systemStore.activeTab === 'invest'" class="flex flex-col max-h-[80vh] overflow-y-scroll gap-2">
-            <div v-for="bundle in systemStore.bundles" :key="bundle.id"
+            <div v-for="bundle in systemStore.bundles" :key="bundle.id" v-if="bundle.status"
                 class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-xl shadow-sm sm:p-6 dark:bg-gray-800 dark:border-gray-700">
                 <h5 class="mb-4 text-xl font-medium text-gray-500 dark:text-gray-400">{{ bundle.name }}
                 </h5>
