@@ -9,7 +9,7 @@ class Bundle extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'time', 'min_deposit', 'income_percent', 'coins'];
+    protected $fillable = ['name', 'time', 'min_deposit', 'income_percent', 'coins', 'status'];
 
     protected $casts = [
         'coins' => 'array',

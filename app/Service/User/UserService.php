@@ -17,23 +17,42 @@ class UserService
 
     public function invest($bundle_id, $amount)
     {
-        if($this->getBalance() < $amount) {
+        $amount = (int) $amount;
+
+        if ($amount <= 0) {
+            return response()->json(['success' => false, 'message' => 'Сумма должна быть больше 0']);
+        }
+
+        if ($this->getBalance() < $amount) {
             return response()->json(['success' => false, 'message' => 'Недостаточно средств']);
         }
+
         $bundle = Bundle::find($bundle_id);
-        $profit = ($amount * $bundle->income_percent / 100) ;
-        $date_end = Carbon::now()->addHours($bundle->time);
-        $deal = Deal::query()->create([
-            'user_id' => $this->tg_id,
-            'bundle_id' => $bundle_id,
-            'amount' => $amount,
-            'profit' => $profit,
-            'date_end' => $date_end->timestamp,
-        ]);
-        if($deal){
-            $this->removeBalance($amount);
-            return response()->json(['success' => true, 'message' => 'Инвестиция прошла успешно']);
+
+        if (!$bundle) {
+            return response()->json(['success' => false, 'message' => 'Связка не найдена']);
         }
+
+        $profit = ($amount * $bundle->income_percent / 100);
+        $date_end = Carbon::now()->addHours($bundle->time);
+
+        try {
+            $deal = Deal::query()->create([
+                'user_id' => $this->tg_id,
+                'bundle_id' => $bundle_id,
+                'amount' => $amount,
+                'profit' => $profit,
+                'date_end' => $date_end->timestamp,
+            ]);
+
+            if ($deal) {
+                $this->removeBalance($amount);
+                return response()->json(['success' => true, 'message' => 'Инвестиция прошла успешно']);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Произошла ошибка при создании инвестиции']);
+        }
+
         return response()->json(['success' => false, 'message' => 'Инвестиция не прошла']);
     }
     public function getUser()
@@ -84,13 +103,13 @@ class UserService
     public function withdraw($deal_id)
     {
         $deal = Deal::find($deal_id);
-        if(!$deal) {
+        if (!$deal) {
             return response()->json(['success' => false, 'message' => 'Инвестиция не найдена']);
         }
-        if($deal->user_id !== $this->tg_id) {
+        if ($deal->user_id !== $this->tg_id) {
             return response()->json(['success' => false, 'message' => 'Вы не можете забрать прибыль этого пользователя']);
         }
-        if($deal->date_end > Carbon::now()->timestamp) {
+        if ($deal->date_end > Carbon::now()->timestamp) {
             return response()->json(['success' => false, 'message' => 'Инвестиция не завершена'], 400);
         }
         $this->addBalance($deal->amount + $deal->profit);
@@ -98,6 +117,4 @@ class UserService
         $deal->save();
         return response()->json(['success' => true, 'message' => 'Вывод средств прошел успешно']);
     }
-    
 }
-

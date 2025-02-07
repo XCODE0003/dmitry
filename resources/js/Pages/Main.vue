@@ -1,7 +1,7 @@
 <script setup>
 import MainLayout from '../Layouts/MainLayout.vue';
 import Header from '../Components/Header.vue';
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, nextTick, watch, onUnmounted } from 'vue';
 import { Tooltip } from 'flowbite';
 import { useSystemStore } from '../Store/System/SystemStore';
 import { useInvestModalStore } from '../Store/Modal/InvestStore';
@@ -21,17 +21,60 @@ function pluralize(number, word) {
     }
 }
 
-onMounted(() => {
-    const tooltipElements = document.querySelectorAll('[data-tooltip-target]');
-    tooltipElements.forEach(tooltipEl => {
-        const targetEl = document.getElementById(tooltipEl.dataset.tooltipTarget);
-        new Tooltip(targetEl, tooltipEl);
-    });
-    systemStore.fetchBundles();
+onMounted(async () => {
+    // Дождемся следующего тика Vue для уверенности, что DOM обновлен
+    await nextTick();
+
+    // Функция инициализации тултипов
+    const initTooltips = () => {
+        const tooltipElements = document.querySelectorAll('[data-tooltip-target]');
+        tooltipElements.forEach(tooltipEl => {
+            const targetEl = document.getElementById(tooltipEl.dataset.tooltipTarget);
+            if (targetEl && !targetEl._tooltip) {  // Проверяем, не инициализирован ли уже тултип
+                try {
+                    targetEl._tooltip = new Tooltip(targetEl, tooltipEl, {
+                        // Добавьте нужные опции
+                        placement: 'top',
+                        trigger: 'hover'
+                    });
+                } catch (e) {
+                    console.error('Tooltip initialization error:', e);
+                }
+            }
+        });
+    };
+
+    initTooltips();
+
+    await systemStore.fetchBundles();
+    console.log(systemStore.bundles);
+    await nextTick();
+    initTooltips();
 
     setInterval(() => {
         now.value = moment.utc();
     }, 1000);
+});
+
+watch(() => systemStore.bundles, async () => {
+    await nextTick();
+    initTooltips();
+}, { deep: true });
+
+watch(() => systemStore.activeTab, async () => {
+    await nextTick();
+    initTooltips();
+});
+
+onUnmounted(() => {
+    const tooltipElements = document.querySelectorAll('[data-tooltip-target]');
+    tooltipElements.forEach(tooltipEl => {
+        const targetEl = document.getElementById(tooltipEl.dataset.tooltipTarget);
+        if (targetEl && targetEl._tooltip) {
+            targetEl._tooltip.destroy();
+            delete targetEl._tooltip;
+        }
+    });
 });
 
 function timeLeft(deal) {
@@ -57,17 +100,18 @@ function checkDeal(bundle) {
 <template>
     <MainLayout>
         <Header />
-        <div v-if="systemStore.activeTab === 'invest'" class="flex flex-col gap-2">
+        <div v-if="systemStore.activeTab === 'invest'" class="flex flex-col max-h-[80vh] overflow-y-scroll gap-2">
             <div v-for="bundle in systemStore.bundles" :key="bundle.id"
+                :class="{ 'hidden': bundle.status === 0 }"
                 class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-xl shadow-sm sm:p-6 dark:bg-gray-800 dark:border-gray-700">
                 <h5 class="mb-4 text-xl font-medium text-gray-500 dark:text-gray-400">{{ bundle.name }}
                 </h5>
                 <div class="flex items-center gap-1 ">
                     <div v-for="(coin, index) in bundle.coins" :key="coin.id" class="flex items-center gap-1">
-                        <button :data-tooltip-target="'tooltip-' + coin.name" type="button">
+                        <button :data-tooltip-target="`tooltip-${coin.name}-${bundle.id}`" type="button">
                             <img :src="'/storage/' + coin?.image" alt="coin" class="w-5 h-5 rounded-full">
                         </button>
-                        <div :id="'tooltip-' + coin.name" role="tooltip"
+                        <div :id="`tooltip-${coin.name}-${bundle.id}`" role="tooltip"
                             class="absolute z-10 invisible inline-block px-3 py-2 text-xs font-medium text-white transition-opacity duration-300 bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
                             {{ coin.name }}
                             <div class="tooltip-arrow" data-popper-arrow></div>
@@ -134,8 +178,8 @@ function checkDeal(bundle) {
                 <h5 class="mb-4 text-xl font-medium text-gray-500 dark:text-gray-400">{{ deal.bundle.name }}
                 </h5>
                 <div class="flex items-center gap-1 ">
-                    <div v-for="(coin, index) in deal.bundle.coins" :key="coin.id" class="flex items-center gap-1">
-                        <button :data-tooltip-target="'tooltip-' + coin.name" type="button">
+                    <div v-for="(coin, index) in deal.bundle.coins" :key="coin.id + '-' + deal.bundle.id" class="flex items-center gap-1">
+                        <button :data-tooltip-target="'tooltip-' + coin.name + '-' + deal.bundle.id" type="button">
                             <img :src="'/storage/' + coin?.image" alt="coin" class="w-5 h-5 rounded-full">
                         </button>
                         <div :id="'tooltip-' + coin.name" role="tooltip"

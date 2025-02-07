@@ -23,6 +23,8 @@ class BundleResource extends Resource
     protected static ?string $pluralModelLabel = 'Связки';
     protected static ?string $pluralModelLabelSingular = 'Связка';
     protected static ?string $label = 'Связка';
+    
+   
 
     public static function form(Form $form): Form
     {
@@ -41,6 +43,9 @@ class BundleResource extends Resource
                 Forms\Components\TextInput::make('income_percent')
                     ->label('Процент дохода')
                     ->required(),
+                Forms\Components\Toggle::make('status')
+                    ->label('Статус')
+                    ->required(),
                 Forms\Components\Section::make('Описание связки')
                     ->columnSpanFull()
                     ->schema([
@@ -57,7 +62,8 @@ class BundleResource extends Resource
                             ->required()
                             ->maxLength(255),
                     ])->columns(2)
-            ])->columns(2)
+            
+                    ])->columns(2)
             ])  ;
     }
 
@@ -73,8 +79,15 @@ class BundleResource extends Resource
                     ->label('Минимальная сумма'),
                 Tables\Columns\TextColumn::make('income_percent')
                     ->label('Процент дохода'),
+                Tables\Columns\ToggleColumn::make('status')
+                    ->label('Статус')
+                    ->sortable(),
             ])
             ->filters([
+                Tables\Filters\Filter::make('status')
+                    ->query(fn (Builder $query): Builder => $query->where('status', true))
+                    ->label('Активные')
+                    ->toggle(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

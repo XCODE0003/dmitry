@@ -7,8 +7,12 @@ const investModalStore = useInvestModalStore()
 const userStore = useUserStore()
 
 
-const amount = ref(null)
+const amount = ref('')
 
+const handleInput = (event) => {
+    const value = event.target.value.replace(/[^0-9]/g, '')
+    amount.value = value === '' ? '' : value
+}
 </script>
 <template>
     <VueFinalModal v-model="investModalStore.modalConfig.modelValue"
@@ -21,8 +25,8 @@ const amount = ref(null)
         :esc-to-close="investModalStore.modalConfig.escToClose" :background="investModalStore.modalConfig.background"
         :lock-scroll="investModalStore.modalConfig.lockScroll"
         :reserve-scroll-bar-gap="investModalStore.modalConfig.reserveScrollBarGap"
-        :swipe-to-close="investModalStore.modalConfig.swipeToClose" content-class="fixed bottom-0 max-w-[350px] mx-auto left-0 right-0">
-        <div class="relative p-4 w-full bottom-0 min-w-[350px] max-w-md max-h-full">
+        :swipe-to-close="investModalStore.modalConfig.swipeToClose" content-class=" max-w-[350px] mx-auto left-0 right-0">
+        <div class="relative p-4 w-full  min-w-[350px] max-w-md max-h-full">
             <div class="relative  bg-white rounded-2xl shadow-sm dark:bg-gray-700">
                 <div
                     class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200">
@@ -44,15 +48,22 @@ const amount = ref(null)
                         <div class="col-span-2">
                             <label 
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Сумма вклада</label>
-                            <input type="text" name="name" id="name"
+                            <input 
+                                type="tel"
+                                name="name" 
+                                id="name"
+                                inputmode="numeric"
+                                pattern="[0-9]*"
+                                v-model="amount"
+                                @input="handleInput"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-                                placeholder="Введите сумму вклада" v-model="amount">
+                                placeholder="Введите сумму вклада"
+                            >
                         </div>
                       
                     </div>
                     <button @click="userStore.invest(investModalStore.modalConfig.bundle, amount)"
                         class="text-white w-full justify-center inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                       
                         Инвестировать
                     </button>
                 </div>
