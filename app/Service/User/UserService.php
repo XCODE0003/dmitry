@@ -94,7 +94,8 @@ class UserService
             return response()->json(['success' => false, 'message' => 'Инвестиция не завершена'], 400);
         }
         $this->addBalance($deal->amount + $deal->profit);
-        $deal->delete();
+        $deal->status = 'completed';
+        $deal->save();
         return response()->json(['success' => true, 'message' => 'Вывод средств прошел успешно']);
     }
     

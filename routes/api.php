@@ -39,7 +39,7 @@ Route::get('/bundles', function () {
 });
 
 Route::get('/deals/{id}', function ($id) {
-    $deals = Deal::query()->where('user_id', $id)->get();
+    $deals = Deal::query()->where('user_id', $id)->where('status', '!=', 'completed')->get();
     $deals->load('bundle');
     return response()->json($deals);
 });
@@ -49,3 +49,13 @@ Route::post('/withdraw', function (Request $request) {
     return $user->withdraw($request->deal_id);
 });
 
+Route::get('/user/{id}/info', function ($id) {
+    $deals = Deal::query()->where('user_id', $id)->get();
+    $deal_active = $deals->where('status', '!=', 'completed');
+    $total_profit = $deals->sum('profit');
+    $total_in_work = $deal_active->sum('amount');
+    return response()->json([
+        'total_profit' => $total_profit,
+        'total_in_work' => $total_in_work
+    ]);
+});
