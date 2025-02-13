@@ -45,12 +45,7 @@ export const useUserStore = defineStore('user', {
             }
         },
         async invest(bundle, amount) {
-            if(amount < bundle.min_deposit) {
-                toast("Минимальная сумма инвестиции " + bundle.min_deposit + " usdt", {
-                    type: "error"
-                });
-                return;
-            }
+           
             const user = useUserStore();
             const modalStore = useInvestModalStore();
             const systemStore = useSystemStore();
