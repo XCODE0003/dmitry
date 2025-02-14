@@ -65,6 +65,11 @@ export const useUserStore = defineStore('user', {
                 modalStore.closeModal();
 
             }
+            else{
+                toast(response.data.message, {
+                    type: "error"
+                });
+            }
         }
     }
 });
