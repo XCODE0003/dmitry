@@ -50,21 +50,20 @@ export const useUserStore = defineStore('user', {
             const modalStore = useInvestModalStore();
             const systemStore = useSystemStore();
             this.loading = true;
-            const response = await axios.post(`/api/user/invest`, { bundle_id: bundle.id, amount: amount, user_id: user.user.id });
-            
-            if(response.status === 200) {
+            try {
+                const response = await axios.post(`/api/user/invest`, { bundle_id: bundle.id, amount: amount, user_id: user.user.id });
                 toast("Инвестиция прошла успешно", {
                     type: "success"
                 });
                 systemStore.fetchDeals();
                 this.fetchBalance();
                 modalStore.closeModal();
-                this.loading = false;
-            }
-            else{
-                toast(response.data.message, {
+            } catch (error) {
+                toast(error.response.data.message, {
                     type: "error"
                 });
+            } finally {
+                this.loading = false;
             }
         }
     }

@@ -32,9 +32,10 @@ class UserService
         if (!$bundle) {
             return response()->json(['success' => false, 'message' => 'Связка не найдена'], 400);
         }
-        if ($bundle->min_deposit <= $amount) {
+        if ($bundle->min_deposit > $amount) {
             return response()->json(['success' => false, 'message' => 'Сумма должна быть больше минимальной суммы инвестиции'], 400);
         }
+        dd($bundle->min_deposit > $amount);
 
         $profit = ($amount * $bundle->income_percent / 100);
         $date_end = Carbon::now()->addHours($bundle->time);
