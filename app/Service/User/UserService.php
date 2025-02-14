@@ -20,17 +20,20 @@ class UserService
         $amount = (int) $amount;
 
         if ($amount <= 0) {
-            return response()->json(['success' => false, 'message' => 'Сумма должна быть больше 0']);
+            return response()->json(['success' => false, 'message' => 'Сумма должна быть больше 0'],400);
         }
 
         if ($this->getBalance() < $amount) {
-            return response()->json(['success' => false, 'message' => 'Недостаточно средств']);
+            return response()->json(['success' => false, 'message' => 'Недостаточно средств'], 400);
         }
 
         $bundle = Bundle::find($bundle_id);
 
         if (!$bundle) {
-            return response()->json(['success' => false, 'message' => 'Связка не найдена']);
+            return response()->json(['success' => false, 'message' => 'Связка не найдена'], 400);
+        }
+        if ($bundle->min_deposit > $amount) {
+            return response()->json(['success' => false, 'message' => 'Сумма должна быть больше минимальной суммы инвестиции'], 400);
         }
 
         $profit = ($amount * $bundle->income_percent / 100);
@@ -50,10 +53,10 @@ class UserService
                 return response()->json(['success' => true, 'message' => 'Инвестиция прошла успешно']);
             }
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Произошла ошибка при создании инвестиции']);
+            return response()->json(['success' => false, 'message' => 'Произошла ошибка при создании инвестиции'], 400);
         }
 
-        return response()->json(['success' => false, 'message' => 'Инвестиция не прошла']);
+        return response()->json(['success' => false, 'message' => 'Инвестиция не прошла'], 400);
     }
     public function getUser()
     {

@@ -6,7 +6,7 @@ const userStore = useUserStore();
 const systemStore = useSystemStore();
 
 onMounted(async () => {
-    const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id ;
+    const userId = window.Telegram?.WebApp?.initDataUnsafe?.user?.id;
     if (userId) {
         await userStore.fetchUser(userId);
         await systemStore.fetchDeals();

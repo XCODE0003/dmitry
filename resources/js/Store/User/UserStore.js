@@ -7,7 +7,7 @@ export const useUserStore = defineStore('user', {
     state: () => ({
         user: null,
         balance: 0,
-        
+        loading: false,
 
     }),
     actions: {
@@ -45,15 +45,11 @@ export const useUserStore = defineStore('user', {
             }
         },
         async invest(bundle, amount) {
-            if(amount < bundle.min_deposit) {
-                toast("Минимальная сумма инвестиции " + bundle.min_deposit + " usdt", {
-                    type: "error"
-                });
-                return;
-            }
+           if(this.loading) return;
             const user = useUserStore();
             const modalStore = useInvestModalStore();
             const systemStore = useSystemStore();
+            this.loading = true;
             const response = await axios.post(`/api/user/invest`, { bundle_id: bundle.id, amount: amount, user_id: user.user.id });
             
             if(response.status === 200) {
@@ -63,7 +59,7 @@ export const useUserStore = defineStore('user', {
                 systemStore.fetchDeals();
                 this.fetchBalance();
                 modalStore.closeModal();
-
+                this.loading = false;
             }
             else{
                 toast(response.data.message, {
