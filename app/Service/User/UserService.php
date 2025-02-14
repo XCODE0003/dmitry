@@ -20,7 +20,7 @@ class UserService
         $amount = (int) $amount;
 
         if ($amount <= 0) {
-            return response()->json(['success' => false, 'message' => 'Сумма должна быть больше 0'],400);
+            return response()->json(['success' => false, 'message' => 'Сумма должна быть больше 0'], 400);
         }
 
         if ($this->getBalance() < $amount) {
@@ -32,7 +32,7 @@ class UserService
         if (!$bundle) {
             return response()->json(['success' => false, 'message' => 'Связка не найдена'], 400);
         }
-        if ($bundle->min_deposit > $amount) {
+        if ($bundle->min_deposit <= $amount) {
             return response()->json(['success' => false, 'message' => 'Сумма должна быть больше минимальной суммы инвестиции'], 400);
         }
 
