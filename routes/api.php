@@ -28,8 +28,7 @@ Route::prefix('user')->group(function () {
     });
     Route::post('/invest', function (Request $request) {
         $user = new UserService($request->user_id);
-        $user->invest($request->bundle_id, $request->amount);
-        return response()->json(['message' => 'Investment successful']);
+        return $user->invest($request->bundle_id, $request->amount);
     });
 });
 
