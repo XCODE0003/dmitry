@@ -11,14 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('bundles', function (Blueprint $table) {
+        Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('time');
-            $table->string('min_deposit');
-            $table->string('income_percent');
-            $table->json('coins');
-            $table->integer('category_id')->nullable();
+            $table->longText('icon')->nullable();
+
             $table->timestamps();
         });
     }
@@ -28,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('bundles');
+        Schema::dropIfExists('categories');
     }
 };

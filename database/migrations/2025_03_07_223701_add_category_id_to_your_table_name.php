@@ -11,15 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('bundles', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('time');
-            $table->string('min_deposit');
-            $table->string('income_percent');
-            $table->json('coins');
+        Schema::table('bundles', function (Blueprint $table) {
             $table->integer('category_id')->nullable();
-            $table->timestamps();
         });
     }
 
@@ -28,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('bundles');
+        Schema::table('bundles', function (Blueprint $table) {
+            $table->dropColumn('category_id');
+        });
     }
 };

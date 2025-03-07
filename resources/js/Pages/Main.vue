@@ -12,12 +12,48 @@ const investModal = useInvestModalStore();
 const userStore = useUserStore();
 const now = ref(moment.utc());
 function pluralize(number, word) {
+    if (word === 'час') {
+        // Если больше 24 часов, конвертируем в дни
+        if (number >= 24 && number % 24 === 0) {
+            const days = number / 24;
+            return formatDays(days);
+        } else if (number > 24) {
+            const days = Math.floor(number / 24);
+            const hours = number % 24;
+            return `${formatDays(days)} ${formatHours(hours)}`;
+        }
+        return formatHours(number);
+    }
+    
+    // Для других слов оставляем прежнюю логику
     if (number % 10 === 1 && number % 100 !== 11) {
         return word;
     } else if ([2, 3, 4].includes(number % 10) && ![12, 13, 14].includes(number % 100)) {
         return word + 'а';
     } else {
         return word + 'ов';
+    }
+}
+
+function formatDays(days) {
+    if (days % 10 === 1 && days % 100 !== 11) {
+        return `${days} день`;
+    } else if ([2, 3, 4].includes(days % 10) && ![12, 13, 14].includes(days % 100)) {
+        return `${days} дня`;
+    } else {
+        return `${days} дней`;
+    }
+}
+
+function formatHours(hours) {
+    if (hours === 0) return '';
+    
+    if (hours % 10 === 1 && hours % 100 !== 11) {
+        return `${hours} час`;
+    } else if ([2, 3, 4].includes(hours % 10) && ![12, 13, 14].includes(hours % 100)) {
+        return `${hours} часа`;
+    } else {
+        return `${hours} часов`;
     }
 }
 
@@ -59,11 +95,13 @@ onMounted(async () => {
 watch(() => systemStore.bundles, async () => {
     await nextTick();
     initTooltips();
+
 }, { deep: true });
 
 watch(() => systemStore.activeTab, async () => {
     await nextTick();
     initTooltips();
+    await systemStore.fetchBundles();
 });
 
 onUnmounted(() => {
@@ -100,7 +138,7 @@ function checkDeal(bundle) {
 <template>
     <MainLayout>
         <Header />
-        <div v-if="systemStore.activeTab === 'invest'" class="flex flex-col max-h-[80vh] overflow-y-scroll gap-2">
+        <div v-if="systemStore.activeTab !== 'work'" class="flex flex-col max-h-[80vh] overflow-y-scroll gap-2">
             <div v-for="bundle in systemStore.bundles" :key="bundle.id"
                 :class="{ 'hidden': bundle.status === 0 }"
                 class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-xl shadow-sm sm:p-6 dark:bg-gray-800 dark:border-gray-700">
@@ -152,7 +190,7 @@ function checkDeal(bundle) {
                         </svg>
 
                         <span class="text-base font-normal leading-tight text-gray-500 dark:text-gray-400 ms-3">Время
-                            работы: {{ bundle.time }} {{ pluralize(bundle.time, 'час') }}</span>
+                            работы: {{ pluralize(bundle.time, 'час') }}</span>
                     </li>
                     <li class="flex">
 
@@ -223,7 +261,7 @@ function checkDeal(bundle) {
                         </svg>
 
                         <span class="text-base font-normal leading-tight text-gray-500 dark:text-gray-400 ms-3">Время
-                            работы: {{ deal.bundle.time }} часов</span>
+                            работы: {{ pluralize(deal.bundle.time, 'час') }}</span>
                     </li>
                     <li class="flex">
 
@@ -257,6 +295,19 @@ function checkDeal(bundle) {
                     <button @click="systemStore.setActiveTab('invest')" type="button"
                         class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 transition-all duration-300 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Посмотреть
                         связки</button>
+                </div>
+            </div>
+        </section>
+        <section v-if="systemStore.activeTab !== 'work' && systemStore?.bundles.length === 0"
+            class="bg-white dark:bg-gray-900">
+            <div class="py-8 px-4 mx-auto max-w-screen-xl lg:py-16 lg:px-6">
+                <div class="mx-auto max-w-screen-sm text-center">
+                    <img class="w-20 h-20 mx-auto" src="/assets/img/not_found.svg" alt="" srcset="">
+
+                    <p class="mb-4 text-3xl tracking-tight font-bold text-gray-900 md:text-4xl dark:text-white">
+                        Пока тут ничего</p>
+                    <p class="mb-4 text-lg font-light text-gray-500 dark:text-gray-400">Но скоро будет</p>
+                  
                 </div>
             </div>
         </section>

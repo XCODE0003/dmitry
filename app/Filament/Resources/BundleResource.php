@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use App\Models\Category;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class BundleResource extends Resource
@@ -46,6 +47,10 @@ class BundleResource extends Resource
                 Forms\Components\Toggle::make('status')
                     ->label('Статус')
                     ->required(),
+                Forms\Components\Select::make('category_id')
+                    ->label('Категория')
+                    ->options(Category::all()->pluck('name', 'id'))
+                    ->required()->native(false) ,
                 Forms\Components\Section::make('Описание связки')
                     ->columnSpanFull()
                     ->schema([
@@ -82,6 +87,8 @@ class BundleResource extends Resource
                 Tables\Columns\ToggleColumn::make('status')
                     ->label('Статус')
                     ->sortable(),
+                Tables\Columns\TextColumn::make('category.name')
+                    ->label('Категория'),
             ])
             ->filters([
                 Tables\Filters\Filter::make('status')

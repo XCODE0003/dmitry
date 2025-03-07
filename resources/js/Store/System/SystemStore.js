@@ -4,10 +4,18 @@ import { useUserStore } from '../User/UserStore';
 
 export const useSystemStore = defineStore('system', {
     state: () => ({
-        activeTab: 'invest',
+        activeTab: 'work',
         deals: [],
-        bundles: []
+        bundles: [],
+        categories: []
     }),
+    watch: {
+        activeTab: {
+            handler() {
+                this.fetchBundles();
+            },
+        },
+    },
     actions: {
         setActiveTab(tab) {
             this.activeTab = tab;
@@ -20,8 +28,12 @@ export const useSystemStore = defineStore('system', {
             }
         },
         async fetchBundles() {
-            const response = await axios.get(`/api/bundles`);
+            const response = await axios.get(`/api/bundles?category_id=${this.activeTab}`);
             this.bundles = response.data;
+        },
+        async fetchCategories() {
+            const response = await axios.get(`/api/categories`);
+            this.categories = response.data;
         }
     }
 });

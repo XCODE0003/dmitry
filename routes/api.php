@@ -5,7 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Service\User\UserService;
 use App\Models\Bundle;
 use App\Models\Deal;
-
+use App\Models\Category;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -32,9 +32,19 @@ Route::prefix('user')->group(function () {
     });
 });
 
-Route::get('/bundles', function () {
-    $bundles = Bundle::all();
+Route::get('/bundles', function (Request $request) {
+    if ($request->category_id !== 'invest') {
+        $bundles = Bundle::query()->where('category_id', $request->category_id)->get();
+    } else {
+        $bundles = Bundle::all();
+    }
+
     return response()->json($bundles);
+});
+
+Route::get('/categories', function () {
+    $categories = Category::all();
+    return response()->json($categories);
 });
 
 Route::get('/deals/{id}', function ($id) {
