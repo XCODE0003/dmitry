@@ -25,7 +25,7 @@ onMounted(async () => {
         <div class="flex flex-col gap-2">
             <div class="flex justify-end">
                 <div class="border border-gray-200 rounded-lg text-xs font-bold p-1 whitespace-nowrap">
-                    {{ (userStore?.balance || 0).toFixed(1) }} usdt
+                    Баланс: {{ (userStore?.balance || 0).toFixed(1) }} usdt
                 </div>
             </div>
 

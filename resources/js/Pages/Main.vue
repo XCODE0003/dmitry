@@ -24,7 +24,7 @@ function pluralize(number, word) {
         }
         return formatHours(number);
     }
-    
+
     // Для других слов оставляем прежнюю логику
     if (number % 10 === 1 && number % 100 !== 11) {
         return word;
@@ -47,7 +47,7 @@ function formatDays(days) {
 
 function formatHours(hours) {
     if (hours === 0) return '';
-    
+
     if (hours % 10 === 1 && hours % 100 !== 11) {
         return `${hours} час`;
     } else if ([2, 3, 4].includes(hours % 10) && ![12, 13, 14].includes(hours % 100)) {
@@ -139,13 +139,14 @@ function checkDeal(bundle) {
     <MainLayout>
         <Header />
         <div v-if="systemStore.activeTab !== 'work'" class="flex flex-col max-h-[80vh] overflow-y-scroll gap-2">
-            <div v-for="bundle in systemStore.bundles" :key="bundle.id"
-                :class="{ 'hidden': bundle.status === 0 }"
+            <div v-for="bundle in systemStore.bundles" :key="bundle.id" :class="{ 'hidden': bundle.status === 0 }"
                 class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-xl shadow-sm sm:p-6 dark:bg-gray-800 dark:border-gray-700">
-                <h5 class="mb-4 text-xl font-medium text-gray-500 dark:text-gray-400">{{ bundle.name }}
+                <h5 :class="{ 'mb-0': bundle.type === 'percent', 'mb-4': bundle.type === 'fixed' }"
+                    class=" text-xl font-medium text-gray-500 dark:text-gray-400">{{ bundle.name }}
                 </h5>
                 <div class="flex items-center gap-1 ">
-                    <div v-for="(coin, index) in bundle.coins" :key="coin.id" class="flex items-center gap-1">
+                    <div v-if="bundle.type === 'fixed'" v-for="(coin, index) in bundle.coins" :key="coin.id"
+                        class="flex items-center gap-1">
                         <button :data-tooltip-target="`tooltip-${coin.name}-${bundle.id}`" type="button">
                             <img :src="'/storage/' + coin?.image" alt="coin" class="w-5 h-5 rounded-full">
                         </button>
@@ -154,34 +155,22 @@ function checkDeal(bundle) {
                             {{ coin.name }}
                             <div class="tooltip-arrow" data-popper-arrow></div>
                         </div>
-                        <svg v-if="index < bundle.coins.length - 1" class="w-3 h-3 text-gray-800 dark:text-white" aria-hidden="true"
-                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
-                            viewBox="0 0 24 24">
+                        <svg v-if="index < bundle.coins.length - 1" class="w-3 h-3 text-gray-800 dark:text-white"
+                            aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            fill="currentColor" viewBox="0 0 24 24">
                             <path fill-rule="evenodd"
                                 d="M3 4a1 1 0 0 0-.822 1.57L6.632 12l-4.454 6.43A1 1 0 0 0 3 20h13.153a1 1 0 0 0 .822-.43l4.847-7a1 1 0 0 0 0-1.14l-4.847-7a1 1 0 0 0-.822-.43H3Z"
                                 clip-rule="evenodd" />
                         </svg>
                     </div>
-
-
-
-
-
+                    <div v-if="bundle.type === 'percent'" class="text-sm text-gray-500 dark:text-gray-400">
+                        {{ bundle.description }}
+                    </div>
 
                 </div>
 
                 <ul role="list" class="space-y-3 my-4">
-                    <li class="flex items-center">
 
-                        <svg class="shrink-0 w-4 h-4 text-blue-700 dark:text-blue-500" aria-hidden="true"
-                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                            <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
-                                d="M8 7V6a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1M3 18v-7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Zm8-3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
-                        </svg>
-
-                        <span class="text-base leading-tight font-normal text-gray-500 dark:text-gray-400 ms-3">Доход за
-                            круг: {{ bundle.income_percent }}% </span>
-                    </li>
                     <li class="flex">
                         <svg class="shrink-0 w-4 h-4 text-blue-700 dark:text-blue-500" aria-hidden="true"
                             xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -204,19 +193,32 @@ function checkDeal(bundle) {
                             class="text-base font-normal leading-tight text-gray-500 dark:text-gray-400 ms-3">Минимальная
                             сумма входа: {{ bundle.min_deposit }} usdt</span>
                     </li>
+                    <li class="flex items-center">
+
+                        <svg class="shrink-0 w-4 h-4 text-blue-700 dark:text-blue-500" aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                                d="M8 7V6a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1M3 18v-7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Zm8-3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+                        </svg>
+
+                        <span class="text-base leading-tight font-normal text-gray-500 dark:text-gray-400 ms-3">Прибыль: {{ bundle.income_percent }}% </span>
+                    </li>
 
                 </ul>
                 <button :disabled="checkDeal(bundle)" type="button" @click="investModal.openModal(bundle)"
-                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-200 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-900 font-medium rounded-lg text-sm px-5 py-2.5 inline-flex justify-center w-full text-center">{{ checkDeal(bundle) ? 'Связка уже в работе' : 'Инвестировать' }}</button>
+                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-200 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-900 font-medium rounded-lg text-sm px-5 py-2.5 inline-flex justify-center w-full text-center">{{
+                        checkDeal(bundle) ? 'Связка уже в работе' : 'Инвестировать' }}</button>
             </div>
         </div>
         <div v-if="systemStore.activeTab === 'work' && systemStore?.deals.length > 0" class="flex flex-col gap-2">
             <div v-for="deal in systemStore.deals" :key="deal.id"
                 class="w-full max-w-sm p-4 bg-white border border-gray-200 rounded-xl shadow-sm sm:p-6 dark:bg-gray-800 dark:border-gray-700">
-                <h5 class="mb-4 text-xl font-medium text-gray-500 dark:text-gray-400">{{ deal.bundle.name }}
+                <h5 :class="{ 'mb-0': deal.bundle.type === 'percent', 'mb-4': deal.bundle.type === 'fixed' }"
+                    class=" text-xl font-medium text-gray-500 dark:text-gray-400">{{ deal.bundle.name }}
                 </h5>
                 <div class="flex items-center gap-1 ">
-                    <div v-for="(coin, index) in deal.bundle.coins" :key="coin.id + '-' + deal.bundle.id" class="flex items-center gap-1">
+                    <div v-if="deal.bundle.type === 'fixed'" v-for="(coin, index) in deal.bundle.coins" :key="coin.id + '-' + deal.bundle.id"
+                        class="flex items-center gap-1">
                         <button :data-tooltip-target="'tooltip-' + coin.name + '-' + deal.bundle.id" type="button">
                             <img :src="'/storage/' + coin?.image" alt="coin" class="w-5 h-5 rounded-full">
                         </button>
@@ -225,13 +227,16 @@ function checkDeal(bundle) {
                             {{ coin.name }}
                             <div class="tooltip-arrow" data-popper-arrow></div>
                         </div>
-                        <svg v-if="index < deal.bundle.coins.length - 1" class="w-3 h-3 text-gray-800 dark:text-white" aria-hidden="true"
-                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
-                            viewBox="0 0 24 24">
+                        <svg v-if="index < deal.bundle.coins.length - 1" class="w-3 h-3 text-gray-800 dark:text-white"
+                            aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                            fill="currentColor" viewBox="0 0 24 24">
                             <path fill-rule="evenodd"
                                 d="M3 4a1 1 0 0 0-.822 1.57L6.632 12l-4.454 6.43A1 1 0 0 0 3 20h13.153a1 1 0 0 0 .822-.43l4.847-7a1 1 0 0 0 0-1.14l-4.847-7a1 1 0 0 0-.822-.43H3Z"
                                 clip-rule="evenodd" />
                         </svg>
+                    </div>
+                    <div v-if="deal.bundle.type === 'percent'" class="text-sm text-gray-500 dark:text-gray-400">
+                        {{ deal.bundle.description }}
                     </div>
 
 
@@ -250,8 +255,7 @@ function checkDeal(bundle) {
                                 d="M8 7V6a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1M3 18v-7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Zm8-3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
                         </svg>
 
-                        <span class="text-base font-normal leading-tight text-gray-500 dark:text-gray-400 ms-3">Доход за
-                            круг: {{ deal.bundle.income_percent }}% </span>
+                        <span class="text-base font-normal leading-tight text-gray-500 dark:text-gray-400 ms-3">Прибыль: {{ deal.bundle.income_percent }}% </span>
                     </li>
                     <li class="flex">
                         <svg class="shrink-0 w-4 h-4 text-blue-700 dark:text-blue-500" aria-hidden="true"
@@ -277,8 +281,11 @@ function checkDeal(bundle) {
                     </li>
 
                 </ul>
-                <div v-if="timeLeft(deal) !== 'ended'" class="p-2 bg-gray-300 rounded-lg text-sm w-fit">До конца работы: {{ timeLeft(deal) }}</div>
-                <button @click="userStore.withdraw(deal.id)" v-else class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-200 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-900 font-medium rounded-lg text-sm px-5 py-2.5 inline-flex justify-center w-full text-center">Забрать прибыль</button>
+                <div v-if="timeLeft(deal) !== 'ended' && deal.type === 'fixed'" class="p-2 bg-gray-300 rounded-lg text-sm w-fit">До конца работы:
+                    {{ timeLeft(deal) }}</div>
+                <button @click="userStore.withdraw(deal.id)" v-if="timeLeft(deal) === 'ended'"
+                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-200 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-900 font-medium rounded-lg text-sm px-5 py-2.5 inline-flex justify-center w-full text-center">Забрать
+                    прибыль</button>
             </div>
         </div>
         <section v-if="systemStore.activeTab === 'work' && systemStore?.deals.length === 0"
@@ -307,7 +314,7 @@ function checkDeal(bundle) {
                     <p class="mb-4 text-3xl tracking-tight font-bold text-gray-900 md:text-4xl dark:text-white">
                         Пока тут ничего</p>
                     <p class="mb-4 text-lg font-light text-gray-500 dark:text-gray-400">Но скоро будет</p>
-                  
+
                 </div>
             </div>
         </section>

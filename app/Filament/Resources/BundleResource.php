@@ -10,6 +10,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\Category;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -51,7 +52,20 @@ class BundleResource extends Resource
                     ->label('Категория')
                     ->options(Category::all()->pluck('name', 'id'))
                     ->required()->native(false) ,
+                Forms\Components\Select::make('type')
+                    ->label('Тип')
+                    ->options([
+                        'fixed' => 'Фиксированный',
+                        'percent' => 'Ежедневный процент',
+                    ])
+                    ->live()
+                    ->required()->native(false),
+                Forms\Components\Textarea::make('description')
+                    ->label('Описание')
+                    ->columnSpanFull()
+                    ->hidden(fn (Forms\Get $get) => $get('type') === 'fixed'),
                 Forms\Components\Section::make('Описание связки')
+                    ->hidden(fn (Forms\Get $get) => $get('type') === 'percent')
                     ->columnSpanFull()
                     ->schema([
                         Forms\Components\Repeater::make('coins')
@@ -89,6 +103,10 @@ class BundleResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('category.name')
                     ->label('Категория'),
+                Tables\Columns\TextColumn::make('type')
+                    ->label('Тип'),
+                Tables\Columns\TextColumn::make('description')
+                    ->label('Описание'),
             ])
             ->filters([
                 Tables\Filters\Filter::make('status')

@@ -11,17 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('bundles', function (Blueprint $table) {
-            $table->id();
-            $table->string('name');
-            $table->string('time');
-            $table->string('min_deposit');
-            $table->string('income_percent');
-            $table->json('coins');
-            $table->integer('category_id')->nullable();
+        Schema::table('bundles', function (Blueprint $table) {
             $table->enum('type', ['fixed', 'percent'])->default('fixed');
             $table->text('description')->nullable();
-            $table->timestamps();
         });
     }
 
@@ -30,6 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('bundles');
+        Schema::table('bundles', function (Blueprint $table) {
+            $table->dropColumn('type');
+            $table->dropColumn('description');
+        });
     }
 };
