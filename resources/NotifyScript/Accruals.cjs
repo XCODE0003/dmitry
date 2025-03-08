@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const { Telegraf } = require('telegraf');
 const path = require('path');
 const fs = require('fs');
+const { MongoClient } = require('mongodb');
 
 // Определяем путь к корню проекта
 const projectRoot = '/var/www/html';
@@ -75,6 +76,13 @@ async function dailyPercentAccruals() {
     
     console.log(`Найдено ${deals.length} активных сделок с типом "percent"`);
     
+    // Подключение к MongoDB
+    const mongoUri = `mongodb://${process.env.MONGO_DB_USERNAME}:${process.env.MONGO_DB_PASSWORD}@${process.env.MONGO_DB_HOST}:${process.env.MONGO_DB_PORT}/${process.env.MONGO_DB_DATABASE}`;
+    const mongoClient = new MongoClient(mongoUri);
+    await mongoClient.connect();
+    const db = mongoClient.db(process.env.MONGO_DB_DATABASE);
+    const usersCollection = db.collection('users');
+    
     // Обрабатываем каждую сделку
     for (const deal of deals) {
       try {
@@ -104,13 +112,25 @@ async function dailyPercentAccruals() {
           [newProfit, deal.id]
         );
         
+        // Добавляем прибыль к балансу пользователя в MongoDB
+        const result = await usersCollection.updateOne(
+          { id: parseInt(deal.user_id) },
+          { $inc: { balance: roundedDailyProfit } }
+        );
+        
+        console.log(`Обновлен баланс пользователя ${deal.user_id}: +${roundedDailyProfit} USDT, результат:`, 
+          result.matchedCount ? 'Пользователь найден' : 'Пользователь не найден', 
+          result.modifiedCount ? 'Баланс обновлен' : 'Баланс не обновлен'
+        );
+        
         // Отправляем уведомление пользователю
         await bot.telegram.sendMessage(
           deal.user_id,
           `💰 Ежедневное начисление прибыли!\n\n` +
           `📊 Инвестиция: ${deal.amount} USDT\n` +
           `✅ Начислено: ${roundedDailyProfit} USDT\n` +
-          `💵 Общая прибыль: ${newProfit} USDT`
+          `💵 Общая прибыль: ${newProfit} USDT\n\n` +
+          `Прибыль автоматически добавлена на ваш баланс!`
         );
         
         console.log(`Начислена прибыль ${roundedDailyProfit} USDT для сделки ${deal.id} пользователя ${deal.user_id}`);
@@ -119,6 +139,9 @@ async function dailyPercentAccruals() {
         console.error(`Ошибка при обработке сделки ${deal.id}:`, error);
       }
     }
+    
+    // Закрываем соединение с MongoDB
+    await mongoClient.close();
     
   } catch (error) {
     console.error('Ошибка при начислении ежедневной прибыли:', error);
