@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('time');
             $table->string('min_deposit');
             $table->string('income_percent');
-            $table->json('coins');
+            $table->json('coins')->nullable();
             $table->integer('category_id')->nullable();
             $table->enum('type', ['fixed', 'percent'])->default('fixed');
             $table->text('description')->nullable();
