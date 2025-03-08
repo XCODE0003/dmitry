@@ -48,9 +48,10 @@ const bot = new Telegraf(botToken);
 // Функция для ежедневного начисления прибыли для сделок с типом "percent"
 async function dailyPercentAccruals() {
   let connection;
+  let mongoClient;
   
   try {
-    // Подключение к базе данных
+    // Подключение к базе данных MySQL
     connection = await mysql.createConnection(dbConfig);
     
     // Получаем текущее время
@@ -77,9 +78,13 @@ async function dailyPercentAccruals() {
     console.log(`Найдено ${deals.length} активных сделок с типом "percent"`);
     
     // Подключение к MongoDB
-    const mongoUri = `mongodb://${process.env.MONGO_DB_USERNAME}:${process.env.MONGO_DB_PASSWORD}@${process.env.MONGO_DB_HOST}:${process.env.MONGO_DB_PORT}/${process.env.MONGO_DB_DATABASE}`;
-    const mongoClient = new MongoClient(mongoUri);
+    const mongoUri = process.env.MONGO_DB_DSN;
+    console.log('MongoDB URI:', mongoUri);
+    
+    mongoClient = new MongoClient(mongoUri);
     await mongoClient.connect();
+    console.log('Подключение к MongoDB успешно установлено');
+    
     const db = mongoClient.db(process.env.MONGO_DB_DATABASE);
     const usersCollection = db.collection('users');
     
@@ -113,8 +118,11 @@ async function dailyPercentAccruals() {
         );
         
         // Добавляем прибыль к балансу пользователя в MongoDB
+        const userId = parseInt(deal.user_id);
+        console.log(`Обновление баланса для пользователя с ID: ${userId}`);
+        
         const result = await usersCollection.updateOne(
-          { id: parseInt(deal.user_id) },
+          { id: userId },
           { $inc: { balance: roundedDailyProfit } }
         );
         
@@ -140,14 +148,16 @@ async function dailyPercentAccruals() {
       }
     }
     
-    // Закрываем соединение с MongoDB
-    await mongoClient.close();
-    
   } catch (error) {
     console.error('Ошибка при начислении ежедневной прибыли:', error);
   } finally {
+    // Закрываем соединения
     if (connection) {
       await connection.end();
+    }
+    if (mongoClient) {
+      await mongoClient.close();
+      console.log('Соединение с MongoDB закрыто');
     }
   }
 }
