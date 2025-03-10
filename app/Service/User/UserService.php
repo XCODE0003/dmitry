@@ -118,6 +118,9 @@ class UserService
         if ($deal->type === 'fixed') {
             $this->addBalance($deal->amount + $deal->profit);
         }
+        else{
+            $this->addBalance($deal->amount);
+        }
         $deal->status = 'completed';
         $deal->save();
         return response()->json(['success' => true, 'message' => 'Вывод средств прошел успешно']);
