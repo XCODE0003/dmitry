@@ -58,14 +58,20 @@ async function dailyPercentAccruals() {
     const now = moment().utc();
     console.log(`Текущее время UTC: ${now.format('YYYY-MM-DD HH:mm:ss')}`);
     
-    // Проверяем, что сейчас 10:00 UTC (с погрешностью в несколько минут для надежности)
+    // Московское время (UTC+3)
+    const mskTime = moment().utc().add(3, 'hours');
+    console.log(`Текущее время МСК: ${mskTime.format('YYYY-MM-DD HH:mm:ss')}`);
+    
+    // Проверяем, что сейчас 7:00 по МСК (4:00 по UTC) с погрешностью в несколько минут
     const currentHour = now.hour();
     const currentMinute = now.minute();
     
-    if (!(currentHour === 10 && currentMinute < 5)) {
-      console.log('Сейчас не 10:00 UTC, пропускаем начисление процентов');
+    if (!(currentHour === 4 && currentMinute < 5)) {
+      console.log('Сейчас не 7:00 по МСК (4:00 UTC), пропускаем начисление процентов');
       return;
     }
+    
+    console.log('Начинаем процесс начисления процентов (7:00 МСК)');
     
     // Получаем все активные сделки с типом "percent"
     const [deals] = await connection.execute(`
@@ -166,8 +172,10 @@ function checkTimeAndRunAccruals() {
   dailyPercentAccruals();
 }
 
+// Проверяем каждые 20 минут (1200000 мс)
 setInterval(checkTimeAndRunAccruals, 1200000);
 
+// Запускаем проверку сразу при старте скрипта
 checkTimeAndRunAccruals();
 
-console.log('Скрипт проверки завершенных сделок и начисления процентов запущен');
+console.log('Скрипт проверки начисления процентов запущен (будет выполняться в 7:00 по МСК)');
