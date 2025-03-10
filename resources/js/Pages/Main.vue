@@ -266,7 +266,7 @@ function checkDeal(bundle) {
                         </svg>
 
                         <span class="text-base font-normal leading-tight text-gray-500 dark:text-gray-400 ms-3">
-                            {{ deal.type === 'fixed' ? `Время работы: ${pluralize(deal.bundle.time, 'час')}` : 'Прибыль начисляется ежедневно в 10:00 UTC   ' }}
+                            {{ deal.type === 'fixed' ? `Время работы: ${pluralize(deal.bundle.time, 'час')}` : 'Прибыль начисляется ежедневно в 07:00 UTC   ' }}
                         </span>
                     </li>
                     <li class="flex">
