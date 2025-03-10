@@ -61,7 +61,7 @@ Route::post('/withdraw', function (Request $request) {
 Route::get('/user/{id}/info', function ($id) {
     $deals = Deal::query()->where('user_id', $id)->get();
     $deal_active = $deals->where('status', '!=', 'completed');
-    $total_profit = $deals->sum('profit');
+    $total_profit = $deal_active->sum('profit');
     $total_in_work = $deal_active->sum('amount');
     return response()->json([
         'total_profit' => $total_profit,
