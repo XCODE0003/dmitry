@@ -18,7 +18,7 @@ return new class extends Migration
             $table->enum('status', ['active', 'completed'])->default('active');
             $table->string('profit');
             $table->string('amount');
-            
+            $table->enum('type', ['fixed', 'percent'])->default('fixed');
             $table->bigInteger('date_end');
             $table->boolean('notify_send')->default(0);
             $table->timestamps();

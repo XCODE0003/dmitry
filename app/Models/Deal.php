@@ -9,7 +9,7 @@ class Deal extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'bundle_id', 'status', 'profit', 'date_end', 'amount'];
+    protected $fillable = ['user_id', 'bundle_id', 'status', 'profit', 'date_end', 'amount', 'type'];
 
     public function user()
     {
