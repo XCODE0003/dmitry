@@ -59,10 +59,12 @@ Route::post('/withdraw', function (Request $request) {
 });
 
 Route::get('/user/{id}/info', function ($id) {
-    $deals = Deal::query()->where('user_id', $id)->get();
-    $deal_active = $deals->where('status', '!=', 'completed');
-    $total_profit = $deal_active->sum('profit');
-    $total_in_work = $deal_active->sum('amount');
+    $deals = Deal::query()->where('user_id', $id)->where('type', 'fixed')->get();
+    $deals_percent = Deal::query()->where('user_id', $id)->where('type', 'percent')->where('created_at', '>=', now()->subDays(1))->get();
+    $deal_active = $deals->where('status', '!=', 'completed')->where('type', 'fixed');
+    $deal_active_percent = $deals_percent->where('status', '!=', 'completed')->where('type', 'percent')->where('created_at', '>=', now()->subDays(1));
+    $total_profit = $deal_active->sum('profit') + $deal_active_percent->sum('profit');
+    $total_in_work = $deal_active->sum('amount') + $deal_active_percent->sum('amount');
     return response()->json([
         'total_profit' => $total_profit,
         'total_in_work' => $total_in_work
