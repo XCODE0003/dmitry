@@ -59,7 +59,6 @@ Route::post('/withdraw', function (Request $request) {
 });
 
 Route::get('/user/{id}/info', function ($id) {
-    // Получаем сделки с присоединением таблицы bundles для получения типа
     $deals = Deal::query()
         ->join('bundles', 'deals.bundle_id', '=', 'bundles.id')
         ->where('deals.user_id', $id)
@@ -67,19 +66,17 @@ Route::get('/user/{id}/info', function ($id) {
         ->select('deals.*', 'bundles.type')
         ->get();
     
-    // Получаем процентные сделки за последний день
     $deals_percent = Deal::query()
         ->join('bundles', 'deals.bundle_id', '=', 'bundles.id')
         ->where('deals.user_id', $id)
         ->where('bundles.type', 'percent')
+        ->where('deals.created_at', '<=', now()->subHours(24))
         ->where('deals.created_at', '>=', now()->subDays(1))
         ->select('deals.*', 'bundles.type')
         ->get();
     
-    // Активные фиксированные сделки
     $deal_active = $deals->where('status', '!=', 'completed');
     
-    // Активные процентные сделки за последний день
     $deal_active_percent = $deals_percent->where('status', '!=', 'completed');
     
     $total_profit = $deal_active->sum('profit') + $deal_active_percent->sum('profit');
