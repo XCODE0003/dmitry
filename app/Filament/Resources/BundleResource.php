@@ -62,8 +62,7 @@ class BundleResource extends Resource
                     ->required()->native(false),
                 Forms\Components\Textarea::make('description')
                     ->label('Описание')
-                    ->columnSpanFull()
-                    ->hidden(fn (Forms\Get $get) => $get('type') === 'fixed'),
+                    ->columnSpanFull(),
                 Forms\Components\Section::make('Описание связки')
                     ->hidden(fn (Forms\Get $get) => $get('type') === 'percent')
                     ->columnSpanFull()

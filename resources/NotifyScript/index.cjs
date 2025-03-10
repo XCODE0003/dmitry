@@ -54,7 +54,7 @@ async function checkCompletedDeals() {
     
     // Получаем все активные сделки, у которых истек срок
     const [deals] = await connection.execute(
-      'SELECT * FROM deals WHERE status = "active" AND date_end <= ? AND notify_send = 0',
+      'SELECT * FROM deals WHERE status = "active" AND date_end <= ? AND notify_send = 0 AND type = "fixed"',
       [currentTimestamp]
     );
     
