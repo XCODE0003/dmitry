@@ -112,7 +112,7 @@ class UserService
         if ($deal->user_id !== $this->tg_id) {
             return response()->json(['success' => false, 'message' => 'Вы не можете забрать прибыль этого пользователя']);
         }
-        if ($deal->date_end > Carbon::now()->timestamp) {
+        if ($deal->type === 'fixed' && $deal->date_end > Carbon::now()->timestamp) {
             return response()->json(['success' => false, 'message' => 'Инвестиция не завершена'], 400);
         }
         if ($deal->type === 'fixed') {
