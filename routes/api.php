@@ -79,7 +79,7 @@ Route::get('/user/{id}/info', function ($id) {
     
     $deal_active_percent = $deals_percent->where('status', '!=', 'completed');
     
-    $total_profit = $deal_active->sum('profit') + $deal_active_percent->sum('profit');
+    $total_profit = $deals->sum('profit') + $deals_percent->sum('profit');
     $total_in_work = $deal_active->sum('amount') + $deal_active_percent->sum('amount');
     
     return response()->json([
