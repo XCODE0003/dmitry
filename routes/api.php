@@ -59,7 +59,7 @@ Route::post('/withdraw', function (Request $request) {
 });
 
 Route::get('/user/{id}/info', function ($id) {
-    $deals = Deal::query()
+    $deals_fixed = Deal::query()
         ->join('bundles', 'deals.bundle_id', '=', 'bundles.id')
         ->where('deals.user_id', $id)
         ->where('bundles.type', 'fixed')
@@ -70,17 +70,20 @@ Route::get('/user/{id}/info', function ($id) {
         ->join('bundles', 'deals.bundle_id', '=', 'bundles.id')
         ->where('deals.user_id', $id)
         ->where('bundles.type', 'percent')
-        ->where('deals.created_at', '<=', now()->subHours(24))
-        ->where('deals.created_at', '>=', now()->subDays(1))
         ->select('deals.*', 'bundles.type')
         ->get();
     
-    $deal_active = $deals->where('status', '!=', 'completed');
+    $deal_active_fixed = $deals_fixed->where('status', '!=', 'completed');
+   
     
     $deal_active_percent = $deals_percent->where('status', '!=', 'completed');
+    $deal_active_percent_profit = $deal_active_percent
+    ->where('created_at', '<=', now()->subHours(24))
+    ->where('created_at', '>=', now()->subDays(1));
     
-    $total_profit = $deals->sum('profit') + $deals_percent->sum('profit');
-    $total_in_work = $deal_active->sum('amount') + $deal_active_percent->sum('amount');
+    
+    $total_profit = $deals_fixed->sum('profit') + $deal_active_percent_profit->sum('profit');
+    $total_in_work = $deal_active_fixed->sum('amount') + $deal_active_percent->sum('amount');
     
     return response()->json([
         'total_profit' => $total_profit,
