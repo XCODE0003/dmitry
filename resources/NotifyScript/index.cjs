@@ -52,20 +52,25 @@ async function checkCompletedDeals() {
     // Получаем текущее время в формате UNIX timestamp
     const currentTimestamp = Math.floor(Date.now() / 1000);
     
-    // Получаем все активные сделки, у которых истек срок
-    const [deals] = await connection.execute(
-      'SELECT * FROM deals WHERE status = "active" AND date_end <= ? AND notify_send = 0',
-      [currentTimestamp]
-    );
+    // Получаем все активные сделки с типом "fixed", у которых истек срок
+    const [deals] = await connection.execute(`
+      SELECT d.* 
+      FROM deals d
+      JOIN bundles b ON d.bundle_id = b.id
+      WHERE d.status = "active" 
+        AND d.date_end <= ? 
+        AND d.notify_send = 0
+        AND b.type = "fixed"
+    `, [currentTimestamp]);
     
-    console.log(`Найдено ${deals.length} завершенных сделок`);
+    console.log(`Найдено ${deals.length} завершенных сделок с типом "fixed"`);
     
     // Обрабатываем каждую завершенную сделку
     for (const deal of deals) {
       try {
         // Получаем информацию о связке (bundle)
         const [bundles] = await connection.execute(
-          'SELECT * FROM bundles WHERE id = ? AND type = "fixed"',
+          'SELECT * FROM bundles WHERE id = ?',
           [deal.bundle_id]
         );
         
@@ -75,7 +80,6 @@ async function checkCompletedDeals() {
           console.error(`Связка с ID ${deal.bundle_id} не найдена для сделки ${deal.id}`);
           continue;
         }
-        
         
         // Отправляем уведомление пользователю
         await bot.telegram.sendMessage(
