@@ -6,6 +6,7 @@ use App\Service\User\UserService;
 use App\Models\Bundle;
 use App\Models\Deal;
 use App\Models\Category;
+use Carbon\Carbon;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -59,6 +60,7 @@ Route::post('/withdraw', function (Request $request) {
 });
 
 Route::get('/user/{id}/info', function ($id) {
+    // Получаем фиксированные сделки
     $deals_fixed = Deal::query()
         ->join('bundles', 'deals.bundle_id', '=', 'bundles.id')
         ->where('deals.user_id', $id)
@@ -66,23 +68,61 @@ Route::get('/user/{id}/info', function ($id) {
         ->select('deals.*', 'bundles.type')
         ->get();
     
+    // Получаем процентные сделки
     $deals_percent = Deal::query()
         ->join('bundles', 'deals.bundle_id', '=', 'bundles.id')
         ->where('deals.user_id', $id)
         ->where('bundles.type', 'percent')
-        ->select('deals.*', 'bundles.type')
+        ->select('deals.*', 'bundles.type', 'bundles.income_percent')
         ->get();
     
+    // Активные фиксированные сделки
     $deal_active_fixed = $deals_fixed->where('status', '!=', 'completed');
-   
     
+    // Активные процентные сделки
     $deal_active_percent = $deals_percent->where('status', '!=', 'completed');
-    $deal_active_percent_profit = $deal_active_percent
-    ->where('created_at', '<=', now()->subHours(24))
-    ->where('created_at', '>=', now()->subDays(1));
     
+    // Расчет прибыли для процентных сделок на основе дней с момента создания
+    $percent_profit = 0;
+    foreach ($deal_active_percent as $deal) {
+        // Получаем дату создания сделки
+        $created_at = Carbon::parse($deal->created_at);
+        
+        // Получаем текущее время
+        $now = Carbon::now();
+        
+        // Рассчитываем количество дней с 7 утра после создания
+        // Если сделка создана до 7 утра, считаем первый день с сегодняшнего дня в 7 утра
+        // Если после 7 утра, то с завтрашнего дня в 7 утра
+        $start_date = $created_at->copy();
+        if ($start_date->hour < 7) {
+            $start_date->setTime(7, 0, 0);
+        } else {
+            $start_date->addDay()->setTime(7, 0, 0);
+        }
+        
+        // Если начальная дата еще не наступила, прибыль = 0
+        if ($start_date > $now) {
+            continue;
+        }
+        
+        // Рассчитываем количество полных дней с 7 утра
+        $days = 0;
+        $current_date = $start_date->copy();
+        
+        while ($current_date <= $now) {
+            $days++;
+            $current_date->addDay();
+        }
+        
+        // Рассчитываем прибыль на основе количества дней и процента дохода
+        $daily_profit = ($deal->amount * $deal->income_percent / 100);
+        $deal_profit = $daily_profit * $days;
+        
+        $percent_profit += $deal_profit;
+    }
     
-    $total_profit = $deals_fixed->sum('profit') + $deal_active_percent_profit->sum('profit');
+    $total_profit = $deals_fixed->sum('profit') + $percent_profit;
     $total_in_work = $deal_active_fixed->sum('amount') + $deal_active_percent->sum('amount');
     
     return response()->json([

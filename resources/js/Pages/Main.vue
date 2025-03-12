@@ -122,12 +122,12 @@ function timeLeft(deal) {
     if (duration.asSeconds() <= 0) {
         return "ended";
     }
-
+    const days = duration.days().toString().padStart(2, '0');
     const hours = duration.hours().toString().padStart(2, '0');
     const minutes = duration.minutes().toString().padStart(2, '0');
     const seconds = duration.seconds().toString().padStart(2, '0');
 
-    return `${hours}:${minutes}:${seconds}`;
+    return `${days}:${hours}:${minutes}:${seconds}`;
 }
 
 function checkDeal(bundle) {
@@ -163,7 +163,7 @@ function checkDeal(bundle) {
                                 clip-rule="evenodd" />
                         </svg>
                     </div>
-                    <div v-if="bundle.type === 'percent'" class="text-sm text-gray-500 dark:text-gray-400">
+                    <div  class="text-sm text-gray-500 dark:text-gray-400">
                         {{ bundle.description }}
                     </div>
 
@@ -208,7 +208,7 @@ function checkDeal(bundle) {
                 </ul>
                 <button :disabled="checkDeal(bundle)" type="button" @click="investModal.openModal(bundle)"
                     class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-200 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-900 font-medium rounded-lg text-sm px-5 py-2.5 inline-flex justify-center w-full text-center">
-                    {{ checkDeal(bundle) ? bundle.type === 'fixed' ? 'Связка уже в работе' : 'Депозит уже в работе' : 'Инвестировать' }}
+                    {{ checkDeal(bundle) ? 'Депозит уже в работе' : 'Инвестировать' }}
                 </button>
             </div>
         </div>
@@ -237,7 +237,7 @@ function checkDeal(bundle) {
                                 clip-rule="evenodd" />
                         </svg>
                     </div>
-                    <div v-if="deal.bundle.type === 'percent'" class="text-sm text-gray-500 dark:text-gray-400">
+                    <div class="text-sm text-gray-500 dark:text-gray-400">
                         {{ deal.bundle.description }}
                     </div>
 
@@ -267,7 +267,7 @@ function checkDeal(bundle) {
                         </svg>
 
                         <span class="text-base font-normal leading-tight text-gray-500 dark:text-gray-400 ms-3">
-                            {{ deal.type === 'fixed' ? `Время работы: ${pluralize(deal.bundle.time, 'час')}` : 'Прибыль начисляется ежедневно в 07:00 UTC   ' }}
+                            {{ deal.bundle.type === 'fixed' ? `Время работы: ${pluralize(deal.bundle.time, 'час')}` : 'Прибыль начисляется ежедневно в 07:00 UTC   ' }}
                         </span>
                     </li>
                     <li class="flex">
