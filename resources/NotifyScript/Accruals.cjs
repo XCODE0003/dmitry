@@ -173,7 +173,7 @@ function checkTimeAndRunAccruals() {
 }
 
 // Проверяем каждые 20 минут (1200000 мс)
-setInterval(checkTimeAndRunAccruals, 1200000);
+setInterval(checkTimeAndRunAccruals, 60000); // 60000 мс = 1 минута
 
 // Запускаем проверку сразу при старте скрипта
 checkTimeAndRunAccruals();
