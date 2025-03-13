@@ -62,11 +62,25 @@ async function dailyPercentAccruals() {
     const mskTime = moment().utc().add(3, 'hours');
     console.log(`Текущее время МСК: ${mskTime.format('YYYY-MM-DD HH:mm:ss')}`);
     
+    // Текущая дата в формате YYYY-MM-DD
+    const currentDate = mskTime.format('YYYY-MM-DD');
+    
     // Проверяем, что сейчас 7:00 по МСК (4:00 по UTC) с погрешностью в несколько минут
     const currentHour = now.hour();
     const currentMinute = now.minute();
     
-    if (!(currentHour === 4 && currentMinute < 5)) {
+    // Проверяем, было ли уже выполнено начисление сегодня
+    const [lastAccrual] = await connection.execute(
+      'SELECT * FROM accrual_logs WHERE date = ? LIMIT 1',
+      [currentDate]
+    );
+    
+    if (lastAccrual.length > 0) {
+      console.log(`Начисление за ${currentDate} уже было выполнено в ${lastAccrual[0].created_at}`);
+      return;
+    }
+    
+    if (!(currentHour === 4 && currentMinute < 15)) {
       console.log('Сейчас не 7:00 по МСК (4:00 UTC), пропускаем начисление процентов');
       return;
     }
@@ -83,6 +97,16 @@ async function dailyPercentAccruals() {
     
     console.log(`Найдено ${deals.length} активных сделок с типом "percent"`);
     
+    if (deals.length === 0) {
+      // Даже если нет сделок, записываем факт проверки
+      await connection.execute(
+        'INSERT INTO accrual_logs (date, deals_count, created_at) VALUES (?, ?, NOW())',
+        [currentDate, 0]
+      );
+      console.log(`Нет активных сделок для начисления. Запись о проверке добавлена в лог.`);
+      return;
+    }
+    
     // Подключение к MongoDB
     const mongoUri = process.env.MONGO_DB_DSN;
     console.log('MongoDB URI:', mongoUri);
@@ -93,6 +117,11 @@ async function dailyPercentAccruals() {
     
     const db = mongoClient.db(process.env.MONGO_DB_DATABASE);
     const usersCollection = db.collection('users');
+    
+    // Счетчики для логирования
+    let successCount = 0;
+    let errorCount = 0;
+    let totalProfit = 0;
     
     // Обрабатываем каждую сделку
     for (const deal of deals) {
@@ -107,12 +136,14 @@ async function dailyPercentAccruals() {
         
         if (!bundle) {
           console.error(`Связка с ID ${deal.bundle_id} не найдена для сделки ${deal.id}`);
+          errorCount++;
           continue;
         }
         
         // Рассчитываем дневную прибыль (income_percent / 100 * amount)
         const dailyProfit = (parseFloat(bundle.income_percent) / 100) * parseFloat(deal.amount);
         const roundedDailyProfit = parseFloat(dailyProfit.toFixed(2));
+        totalProfit += roundedDailyProfit;
         
         // Обновляем общую прибыль сделки
         const newProfit = parseFloat(deal.profit) + roundedDailyProfit;
@@ -148,11 +179,21 @@ async function dailyPercentAccruals() {
         // );
         
         console.log(`Начислена прибыль ${roundedDailyProfit} USDT для сделки ${deal.id} пользователя ${deal.user_id}`);
+        successCount++;
         
       } catch (error) {
         console.error(`Ошибка при обработке сделки ${deal.id}:`, error);
+        errorCount++;
       }
     }
+    
+    // Записываем информацию о выполненном начислении
+    await connection.execute(
+      'INSERT INTO accrual_logs (date, deals_count, success_count, error_count, total_profit, created_at) VALUES (?, ?, ?, ?, ?, NOW())',
+      [currentDate, deals.length, successCount, errorCount, totalProfit]
+    );
+    
+    console.log(`Начисление за ${currentDate} выполнено успешно. Обработано сделок: ${deals.length}, успешно: ${successCount}, с ошибками: ${errorCount}, общая прибыль: ${totalProfit} USDT`);
     
   } catch (error) {
     console.error('Ошибка при начислении ежедневной прибыли:', error);
@@ -173,7 +214,7 @@ function checkTimeAndRunAccruals() {
 }
 
 // Проверяем каждые 20 минут (1200000 мс)
-setInterval(checkTimeAndRunAccruals, 60000); // 60000 мс = 1 минута
+setInterval(checkTimeAndRunAccruals, 60000); // 300000 мс = 5 минут
 
 // Запускаем проверку сразу при старте скрипта
 checkTimeAndRunAccruals();
